@@ -109,6 +109,11 @@ class CaptionSettingsForm(QVBoxLayout):
         basic_settings_form.addRow(self.device_label, self.device_combo_box)
         basic_settings_form.addRow(self.load_in_4_bit_container)
         basic_settings_form.addRow(self.remove_tag_separators_container)
+        self.skip_existing_captions_check_box = SettingsBigCheckBox(
+            key='skip_existing_captions', default=False)
+        basic_settings_form.addRow(
+            'Skip images with existing captions',
+            self.skip_existing_captions_check_box)
 
         self.wd_tagger_settings_form_container = QWidget()
         wd_tagger_settings_form = QFormLayout(
@@ -317,6 +322,8 @@ class CaptionSettingsForm(QVBoxLayout):
             'load_in_4_bit': self.load_in_4_bit_check_box.isChecked(),
             'remove_tag_separators':
                 self.remove_tag_separators_check_box.isChecked(),
+            'skip_existing_captions':
+                self.skip_existing_captions_check_box.isChecked(),
             'bad_words': self.bad_words_line_edit.text(),
             'forced_words': self.forced_words_line_edit.text(),
             'generation_parameters': {

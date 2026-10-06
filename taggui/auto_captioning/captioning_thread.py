@@ -98,6 +98,9 @@ class CaptioningThread(QThread):
             are_multiple_images_selected, captioning_start_datetime)
         print(captioning_message)
         caption_position = self.caption_settings['caption_position']
+        skip_existing_captions = self.caption_settings.get(
+            'skip_existing_captions', False)
+        skipped_image_count = 0
         for i, image_index in enumerate(self.selected_image_indices):
             start_time = perf_counter()
             if self.is_canceled:
@@ -105,6 +108,13 @@ class CaptioningThread(QThread):
                 return
             image: Image = self.image_list_model.data(image_index,
                                                       Qt.ItemDataRole.UserRole)
+            if skip_existing_captions and image.tags:
+                skipped_image_count += 1
+                print(f'Skipping {image.path.name} because it already has a '
+                      'caption.')
+                if are_multiple_images_selected:
+                    self.progress_bar_update_requested.emit(i + 1)
+                continue
             image_prompt = model.get_image_prompt(image)
             try:
                 model_inputs = model.get_model_inputs(image_prompt, image)
@@ -131,10 +141,14 @@ class CaptioningThread(QThread):
                                          .total_seconds())
             average_captioning_duration = (total_captioning_duration /
                                            selected_image_count)
-            print(f'Finished captioning {selected_image_count} images in '
+            captioned_image_count = selected_image_count - skipped_image_count
+            print(f'Finished captioning {captioned_image_count} images in '
                   f'{format_duration(total_captioning_duration)} '
                   f'({average_captioning_duration:.1f} s/image) at '
                   f'{captioning_end_datetime.strftime("%Y-%m-%d %H:%M:%S")}.')
+            if skipped_image_count:
+                print(f'Skipped {skipped_image_count} images that already '
+                      'had captions.')
 
     def run(self):
         try:
