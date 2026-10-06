@@ -78,6 +78,6 @@ def get_model_class(model_id: str) -> type[AutoCaptioningModel]:
         return Moondream2
     if 'phi-3' in lowercase_model_id:
         return Phi3Vision
-    if 'wd' in lowercase_model_id and 'tagger' in lowercase_model_id:
+    if 'tagger' in lowercase_model_id:
         return WdTagger
     return AutoCaptioningModel
